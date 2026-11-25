@@ -2,6 +2,7 @@ import model.*;
 
 public class Main {
     public static void main(String[] args) {
+        dao.DatabaseManager.initialise();
         Customer c = new Customer("Thabo", "Mokoena", "Plot 123, Gaborone");
 
         SavingsAccount savings = new SavingsAccount("S001", "Main Mall", c);
@@ -32,5 +33,40 @@ public class Main {
             System.out.printf("%s (%s): BWP%.2f%n",
                 a.getAccountNumber(), a.getClass().getSimpleName(), a.getBalance());
         }
+
+                    dao.CustomerDAO cdao = new dao.CustomerDAO();
+            Customer neo = new Customer("Neo", "Kgosi", "Plot 9, Francistown");
+            cdao.save(neo);
+            System.out.println("Saved with id " + neo.getId());
+            for (Customer x : cdao.findAll()) {
+                System.out.println(x.getId() + " " + x.getFirstName() + " " + x.getSurname());
+            }
+            
+
+                    dao.AccountDAO adao = new dao.AccountDAO();
+        Customer ann = new Customer("Ann", "Moyo", "Plot 4, Maun");
+        cdao.save(ann);
+
+        SavingsAccount sa = new SavingsAccount("S900", "Main Mall", ann);
+        sa.deposit(1000);
+        InvestmentAccount ia = new InvestmentAccount("I900", "Main Mall", ann, 800);
+        ChequeAccount ca = new ChequeAccount("C900", "Main Mall", ann, "Acme Ltd", "Plot 5, Gaborone");
+        ca.deposit(2000);
+
+        adao.save(sa);
+        adao.save(ia);
+        adao.save(ca);
+
+        ia.withdraw(300);
+        adao.updateBalance(ia);
+
+        Customer loaded = cdao.findById(ann.getId());
+        for (Account a : adao.findByCustomer(loaded)) {
+            System.out.println(a.getAccountNumber() + " " + a.getClass().getSimpleName() + " " + a.getBalance());
+        }
+
     }
+
 }
+
+    

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Customer {
+
+    private int id;
     private String firstName;
     private String surname;
     private String address;
@@ -22,7 +24,8 @@ public class Customer {
     public List<Account>getAccounts(){
         return accounts;
     }
-
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
     public String getFirstName(){return firstName;}
     public String getSurname(){return surname;}
     public String getAddress(){return address;}

@@ -30,6 +30,7 @@ public  abstract class Account {
     public abstract void withdraw(double amount);
 
     protected void setBalance(double balance) {this.balance = balance;}
+    public void restoreBalance(double balance) {this.balance = balance;}
     public double getBalance() {return balance;}
     public String getAccountNumber() {return accountNumber; }
     public String getBranch() {return branch;}
