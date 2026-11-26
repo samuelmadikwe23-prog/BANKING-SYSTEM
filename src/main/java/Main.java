@@ -1,6 +1,6 @@
 import model.*;
 
-public class main {
+public class Main {
     public static void main(String[] args) {
         dao.DatabaseManager.initialise();
         controller.AccountController ctrl = new controller.AccountController();
