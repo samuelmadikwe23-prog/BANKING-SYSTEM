@@ -5,6 +5,7 @@ import dao.CustomerDAO;
 import model.*;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class CustomerController {
     private final CustomerDAO customerDAO = new CustomerDAO();
@@ -46,5 +47,19 @@ public class CustomerController {
 
     public List<Customer> getAllCustomers() {
         return customerDAO.findAll();
+    }
+
+    public String getCustomerName(int customerId) {
+        Customer c = customerDAO.findById(customerId);
+        return c.getFirstName() + " " + c.getSurname();
+    }
+
+    public List<String> getAccountNumbers(int customerId) {
+        Customer c = customerDAO.findById(customerId);
+        List<String> numbers = new ArrayList<>();
+        for (Account a : accountDAO.findByCustomer(c)) {
+            numbers.add(a.getAccountNumber());
+        }
+        return numbers;
     }
 }
