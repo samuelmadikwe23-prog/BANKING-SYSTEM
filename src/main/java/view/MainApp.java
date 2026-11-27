@@ -33,11 +33,8 @@ public class MainApp extends Application {
             stage.setScene(new Scene(view.getRoot(), 650, 600));
         } else {
             // placeholder until the teller screen is built
-            Button logout = new Button("Log out");
-            logout.setOnAction(e -> showLogin());
-            VBox box = new VBox(15, new Label("Teller screen coming next"), logout);
-            box.setAlignment(Pos.CENTER);
-            stage.setScene(new Scene(box, 600, 400));
+            TellerView view = new TellerView(this::showLogin);
+            stage.setScene(new Scene(view.getRoot(), 450, 650));
         }
     }
 
