@@ -17,11 +17,16 @@ import model.Customer;
 import model.CustomerSummary;
 import model.RegistrationResult;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
 public class TellerView {
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     private static final StringConverter<CustomerSummary> SUMMARY_CONVERTER =
             new StringConverter<CustomerSummary>() {
                 @Override
@@ -52,7 +57,7 @@ public class TellerView {
     private final TextField searchField = new TextField();
     private final ComboBox<String> filterBox = new ComboBox<>();
     private final TableView<CustomerSummary> table = new TableView<>();
-    private final Label detailLabel = new Label("Select a customer to see their accounts.");
+    private final Label detailLabel = new Label("Select a customer to see their details.");
     private final Label customersMsg = new Label();
     private final Button openForBtn = new Button("Open account");
     private final Button deleteBtn = new Button("Delete customer");
@@ -60,6 +65,10 @@ public class TellerView {
     // register tab
     private final TextField regFirst = new TextField();
     private final TextField regLast = new TextField();
+    private final TextField regPhone = new TextField();
+    private final TextField regEmail = new TextField();
+    private final TextField regId = new TextField();
+    private final DatePicker regDob = new DatePicker();
     private final TextField regAddress = new TextField();
     private final Label regMsg = new Label();
     private final VBox regResult = new VBox(10);
@@ -90,6 +99,8 @@ public class TellerView {
     private final Label resetMsg = new Label();
 
     public TellerView(Runnable onLogout) {
+        root.getStyleClass().add("gradient-bg");
+
         customersPane = buildCustomersPane();
         registerPane = buildRegisterPane();
         openPane = buildOpenPane();
@@ -116,10 +127,11 @@ public class TellerView {
         role.getStyleClass().add("muted");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+        Button theme = Theme.toggleButton(root);
         Button logout = new Button("Log out");
         logout.getStyleClass().add("secondary");
         logout.setOnAction(e -> onLogout.run());
-        HBox header = new HBox(12, logo, brand, role, spacer, logout);
+        HBox header = new HBox(12, logo, brand, role, spacer, theme, logout);
         header.getStyleClass().add("header");
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -168,7 +180,7 @@ public class TellerView {
     // ================= customers tab =================
 
     private VBox buildCustomersPane() {
-        searchField.setPromptText("Search by name...");
+        searchField.setPromptText("Search by name, phone or ID number...");
         HBox.setHgrow(searchField, Priority.ALWAYS);
         searchField.textProperty().addListener((o, a, b) -> refreshCustomers());
         filterBox.getItems().addAll("All", "With accounts", "Without accounts");
@@ -178,6 +190,7 @@ public class TellerView {
 
         table.getColumns().add(column("ID", c -> String.valueOf(c.id())));
         table.getColumns().add(column("Name", CustomerSummary::name));
+        table.getColumns().add(column("Phone", CustomerSummary::phone));
         table.getColumns().add(column("Address", CustomerSummary::address));
         table.getColumns().add(column("Accounts", c -> String.valueOf(c.accountCount())));
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -217,18 +230,27 @@ public class TellerView {
         openForBtn.setDisable(!has);
         deleteBtn.setDisable(!has);
         if (!has) {
-            detailLabel.setText("Select a customer to see their accounts.");
+            detailLabel.setText("Select a customer to see their details.");
             return;
         }
+        Customer c = customers.getCustomer(s.id());
+        StringBuilder sb = new StringBuilder();
+        sb.append(s.name())
+                .append("\nPhone: ").append(dash(c.getPhone()))
+                .append("     Email: ").append(dash(c.getEmail()))
+                .append("\nID number: ").append(dash(c.getIdNumber()))
+                .append("     Born: ")
+                .append(c.getDateOfBirth() == null ? "-" : DATE_FMT.format(c.getDateOfBirth()))
+                .append("\n");
         List<String> numbers = customers.getAccountNumbers(s.id());
         if (numbers.isEmpty()) {
-            detailLabel.setText(s.name() + " has no accounts yet.");
-            return;
-        }
-        StringBuilder sb = new StringBuilder(s.name() + "'s accounts:");
-        for (String n : numbers) {
-            sb.append("\n   ").append(accounts.getAccountLabel(n))
-                    .append("   ").append(money(accounts.getBalance(n)));
+            sb.append("\nNo accounts yet.");
+        } else {
+            sb.append("\nAccounts:");
+            for (String n : numbers) {
+                sb.append("\n   ").append(accounts.getAccountLabel(n))
+                        .append("   ").append(money(accounts.getBalance(n)));
+            }
         }
         detailLabel.setText(sb.toString());
     }
@@ -256,16 +278,61 @@ public class TellerView {
     private VBox buildRegisterPane() {
         regFirst.setPromptText("First name");
         regLast.setPromptText("Surname");
+        regPhone.setPromptText("e.g. 71234567");
+        regEmail.setPromptText("name@example.com");
+        regId.setPromptText("9 digits");
         regAddress.setPromptText("Address");
+
+        regDob.setPromptText("dd/mm/yyyy");
+        regDob.setMaxWidth(Double.MAX_VALUE);
+        regDob.setConverter(new StringConverter<LocalDate>() {
+            @Override
+            public String toString(LocalDate d) {
+                return d == null ? "" : DATE_FMT.format(d);
+            }
+
+            @Override
+            public LocalDate fromString(String s) {
+                if (s == null || s.isBlank()) {
+                    return null;
+                }
+                try {
+                    return LocalDate.parse(s.trim(), DATE_FMT);
+                } catch (DateTimeParseException e) {
+                    return null;
+                }
+            }
+        });
+
+        GridPane form = new GridPane();
+        form.setHgap(14);
+        form.setVgap(6);
+        ColumnConstraints left = new ColumnConstraints();
+        left.setPercentWidth(50);
+        ColumnConstraints right = new ColumnConstraints();
+        right.setPercentWidth(50);
+        form.getColumnConstraints().addAll(left, right);
+        form.add(fieldLabel("FIRST NAME"), 0, 0);
+        form.add(regFirst, 0, 1);
+        form.add(fieldLabel("SURNAME"), 1, 0);
+        form.add(regLast, 1, 1);
+        form.add(fieldLabel("PHONE NUMBER"), 0, 2);
+        form.add(regPhone, 0, 3);
+        form.add(fieldLabel("EMAIL"), 1, 2);
+        form.add(regEmail, 1, 3);
+        form.add(fieldLabel("ID (OMANG) NUMBER"), 0, 4);
+        form.add(regId, 0, 5);
+        form.add(fieldLabel("DATE OF BIRTH"), 1, 4);
+        form.add(regDob, 1, 5);
+        form.add(fieldLabel("ADDRESS"), 0, 6, 2, 1);
+        form.add(regAddress, 0, 7, 2, 1);
 
         Button reg = new Button("Register customer");
         reg.setOnAction(e -> register());
         Button clear = new Button("Clear");
         clear.getStyleClass().add("secondary");
         clear.setOnAction(e -> {
-            regFirst.clear();
-            regLast.clear();
-            regAddress.clear();
+            clearRegisterForm();
             regMsg.setText("");
         });
         HBox buttons = new HBox(10, reg, clear);
@@ -286,17 +353,15 @@ public class TellerView {
         regResult.getStyleClass().add("note");
         hideRegResult();
 
-        return card(sectionTitle("Register a new customer"),
-                fieldLabel("FIRST NAME"), regFirst,
-                fieldLabel("SURNAME"), regLast,
-                fieldLabel("ADDRESS"), regAddress,
-                buttons, regMsg, regResult);
+        return card(sectionTitle("Register a new customer"), form, buttons, regMsg, regResult);
     }
 
     private void register() {
         try {
+            LocalDate dob = regDob.getConverter().fromString(regDob.getEditor().getText());
             RegistrationResult r = customers.registerWithLogin(
-                    regFirst.getText(), regLast.getText(), regAddress.getText());
+                    regFirst.getText(), regLast.getText(), regAddress.getText(),
+                    regPhone.getText(), regEmail.getText(), regId.getText(), dob);
             lastRegistered = r;
             regSummary.setText(r.customer().getFirstName() + " " + r.customer().getSurname()
                     + " (#" + r.customer().getId() + ") is now registered.");
@@ -305,14 +370,23 @@ public class TellerView {
                     + "\nGive these to the customer. The password cannot be shown again.");
             regResult.setVisible(true);
             regResult.setManaged(true);
-            regFirst.clear();
-            regLast.clear();
-            regAddress.clear();
+            clearRegisterForm();
             regMsg.setText("");
         } catch (IllegalArgumentException ex) {
             hideRegResult();
             setMessage(regMsg, ex.getMessage(), false);
         }
+    }
+
+    private void clearRegisterForm() {
+        regFirst.clear();
+        regLast.clear();
+        regPhone.clear();
+        regEmail.clear();
+        regId.clear();
+        regAddress.clear();
+        regDob.setValue(null);
+        regDob.getEditor().clear();
     }
 
     private void hideRegResult() {
@@ -323,7 +397,7 @@ public class TellerView {
     // ================= open account tab =================
 
     private VBox buildOpenPane() {
-        openSearch.setPromptText("Type a name to find the customer...");
+        openSearch.setPromptText("Type a name, phone or ID number to find the customer...");
         openSearch.textProperty().addListener((o, a, b) -> loadOpenCustomers());
         openCustomerBox.setPromptText("Choose customer");
         openCustomerBox.setMaxWidth(Double.MAX_VALUE);
@@ -550,6 +624,10 @@ public class TellerView {
         a.setTitle(title);
         a.setHeaderText(title);
         return a.showAndWait().filter(b -> b == ButtonType.OK).isPresent();
+    }
+
+    private String dash(String s) {
+        return s == null || s.isBlank() ? "-" : s;
     }
 
     private double parseAmount(String text) {

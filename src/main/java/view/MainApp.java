@@ -20,6 +20,7 @@ public class MainApp extends Application {
     }
 
     private Scene styled(Parent root, double width, double height) {
+        Theme.apply(root);
         Scene scene = new Scene(root, width, height);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         return scene;
@@ -37,7 +38,7 @@ public class MainApp extends Application {
             stage.setScene(styled(view.getRoot(), 820, 700));
         } else {
             TellerView view = new TellerView(this::showLogin);
-            stage.setScene(styled(view.getRoot(), 1020, 740));
+            stage.setScene(styled(view.getRoot(), 1020, 760));
         }
         stage.centerOnScreen();
     }

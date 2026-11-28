@@ -50,6 +50,8 @@ public class CustomerView {
     private final VBox historyPane;
 
     public CustomerView(int customerId, Runnable onLogout) {
+        root.getStyleClass().add("gradient-bg");
+
         // ----- header -----
         Label logo = new Label("SP");
         logo.getStyleClass().add("logo-chip");
@@ -59,10 +61,11 @@ public class CustomerView {
         who.getStyleClass().add("muted");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+        Button theme = Theme.toggleButton(root);
         Button logout = new Button("Log out");
         logout.getStyleClass().add("secondary");
         logout.setOnAction(e -> onLogout.run());
-        HBox header = new HBox(12, logo, brand, spacer, who, logout);
+        HBox header = new HBox(12, logo, brand, spacer, who, theme, logout);
         header.getStyleClass().add("header");
         header.setAlignment(Pos.CENTER_LEFT);
 

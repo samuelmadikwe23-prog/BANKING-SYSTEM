@@ -20,7 +20,11 @@ public class DatabaseManager {
                 customer_id INT AUTO_INCREMENT PRIMARY KEY,
                 first_name VARCHAR(50) NOT NULL,
                 surname VARCHAR(50) NOT NULL,
-                address VARCHAR(100) NOT NULL
+                address VARCHAR(100) NOT NULL,
+                phone VARCHAR(20),
+                email VARCHAR(100),
+                id_number VARCHAR(20),
+                date_of_birth DATE
             )""";
 
         String accounts = """
@@ -55,11 +59,21 @@ public class DatabaseManager {
                 FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
             )""";
 
+        String[] upgrades = {
+                "ALTER TABLE customers ADD COLUMN IF NOT EXISTS phone VARCHAR(20)",
+                "ALTER TABLE customers ADD COLUMN IF NOT EXISTS email VARCHAR(100)",
+                "ALTER TABLE customers ADD COLUMN IF NOT EXISTS id_number VARCHAR(20)",
+                "ALTER TABLE customers ADD COLUMN IF NOT EXISTS date_of_birth DATE"
+        };
+
         try (Connection conn = getConnection(); Statement st = conn.createStatement()) {
             st.execute(customers);
             st.execute(accounts);
             st.execute(transactions);
             st.execute(users);
+            for (String sql : upgrades) {
+                st.execute(sql);
+            }
             System.out.println("Database ready.");
         } catch (SQLException e) {
             throw new RuntimeException("Could not set up database", e);

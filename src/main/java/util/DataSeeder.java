@@ -7,6 +7,8 @@ import dao.UserDAO;
 import model.Account;
 import model.Customer;
 
+import java.time.LocalDate;
+
 public class DataSeeder {
 
     public static void seedIfNeeded() {
@@ -37,7 +39,14 @@ public class DataSeeder {
         };
 
         for (int i = 0; i < people.length; i++) {
-            Customer c = cc.register(people[i][0], people[i][1], people[i][2]);
+            String first = people[i][0];
+            String last = people[i][1];
+            String phone = String.format("7123%04d", i + 1);
+            String email = first.toLowerCase() + "." + last.toLowerCase() + "@example.com";
+            String idNumber = "10000000" + i;
+            LocalDate dob = LocalDate.of(1985 + i, 3 + (i % 9), 10 + i);
+
+            Customer c = cc.register(first, last, people[i][2], phone, email, idNumber, dob);
 
             // everyone gets a savings account
             Account savings = cc.openSavings(c);
@@ -56,7 +65,7 @@ public class DataSeeder {
             }
 
             // each customer logs in with their first name and password pass123
-            lc.createUser(people[i][0].toLowerCase(), "pass123", "CUSTOMER", c.getId());
+            lc.createUser(first.toLowerCase(), "pass123", "CUSTOMER", c.getId());
         }
     }
 }

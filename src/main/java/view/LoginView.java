@@ -43,7 +43,7 @@ public class LoginView {
         return box;
     }
 
-    private VBox buildFormPanel(Consumer<User> onSuccess) {
+    private StackPane buildFormPanel(Consumer<User> onSuccess) {
         Label welcome = new Label("Welcome back");
         welcome.getStyleClass().add("title");
         Label sub = new Label("Log in to your SwiftPass account");
@@ -108,8 +108,13 @@ public class LoginView {
         VBox side = new VBox(card);
         side.setAlignment(Pos.CENTER);
         side.setPadding(new Insets(30));
-        HBox.setHgrow(side, Priority.ALWAYS);
-        return side;
+
+        Button theme = Theme.toggleButton(root);
+        StackPane wrap = new StackPane(side, theme);
+        StackPane.setAlignment(theme, Pos.TOP_RIGHT);
+        StackPane.setMargin(theme, new Insets(16));
+        HBox.setHgrow(wrap, Priority.ALWAYS);
+        return wrap;
     }
 
     public Parent getRoot() {
