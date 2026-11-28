@@ -8,10 +8,9 @@ import java.util.List;
 
 public class TransactionDAO {
 
-    // CREATE
     public void record(String accountNumber, String type, double amount, double balanceAfter) {
         String sql = "INSERT INTO transactions (account_number, txn_type, amount, balance_after) "
-                   + "VALUES (?, ?, ?, ?)";
+                + "VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, accountNumber);
@@ -24,7 +23,6 @@ public class TransactionDAO {
         }
     }
 
-    // READ
     public List<Transaction> findByAccount(String accountNumber) {
         List<Transaction> list = new ArrayList<>();
         String sql = "SELECT * FROM transactions WHERE account_number = ? ORDER BY transaction_id";
@@ -45,5 +43,16 @@ public class TransactionDAO {
             throw new RuntimeException("Could not load transactions", e);
         }
         return list;
+    }
+
+    public void deleteByAccount(String accountNumber) {
+        String sql = "DELETE FROM transactions WHERE account_number = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, accountNumber);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not delete transactions", e);
+        }
     }
 }

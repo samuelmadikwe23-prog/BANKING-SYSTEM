@@ -1,8 +1,8 @@
 package model;
 
 public class InvestmentAccount extends Account implements InterestBearing {
-    private  static final double INTEREST_RATE = 0.05;// 5% monthly
-    private  static final double MIN_OPENING_DEPOSIT = 500.00;
+    private static final double INTEREST_RATE = 0.05; // 5% monthly
+    private static final double MIN_OPENING_DEPOSIT = 500.00;
 
     public InvestmentAccount(String accountNumber, String branch, Customer owner, double initialDeposit) {
         super(accountNumber, branch, owner);
@@ -12,15 +12,19 @@ public class InvestmentAccount extends Account implements InterestBearing {
         deposit(initialDeposit);
     }
 
-    @Override 
+    @Override
     public void withdraw(double amount) {
-        if (amount <=0 || amount > getBalance()) {
-            throw new IllegalArgumentException("Invalid withdrawal amount");
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Enter an amount greater than zero");
+        }
+        if (amount > getBalance()) {
+            throw new IllegalArgumentException(String.format(java.util.Locale.US,
+                    "Insufficient funds. Available balance: BWP%.2f", getBalance()));
         }
         setBalance(getBalance() - amount);
     }
 
-    @Override 
+    @Override
     public void payInterest() {
         deposit(getBalance() * INTEREST_RATE);
     }

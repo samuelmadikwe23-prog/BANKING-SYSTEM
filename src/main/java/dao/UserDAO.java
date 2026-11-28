@@ -42,4 +42,27 @@ public class UserDAO {
         }
         return null;
     }
+
+    public void updatePassword(String username, String passwordHash) {
+        String sql = "UPDATE users SET password = ? WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setString(2, username);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not update password", e);
+        }
+    }
+
+    public void deleteByCustomer(int customerId) {
+        String sql = "DELETE FROM users WHERE customer_id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not delete user", e);
+        }
+    }
 }
